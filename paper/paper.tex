@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{tikz}
+\usepackage{tikz}    
 \usepackage[final,nonatbib]{nips_2016}
 
 \usepackage[utf8]{inputenc} % allow utf-8 input
@@ -16,7 +16,9 @@
 
 \usepackage[backend=bibtex]{biblatex}
 \bibliography{smallbiblio}
-\usetikzlibrary{arrows.meta}
+%\usetikzlibrary{arrows}
+\tikzset{>=latex}
+%\usetikzlibrary{arrows.meta}
 
 \title{Backpropagation of Hebbian plasticity for lifelong learning}
 
@@ -328,8 +330,13 @@ neuron of the output layer).
 % input and output! This is an extension of the general idea that Hebbian
 % plasticity is fundamentally self-reinforcing...
 
+
+
+
 \begin{figure}
 \centering
+%\includegraphics[scale=0.25]{figgraphs.png}
+% Actual code for the graphs (be sure to uncomment \usepackage{tikz} in the header).  
 \begin{subfigure}[t]{0.2\textwidth}
 \centering
 \begin{tikzpicture}
@@ -338,11 +345,9 @@ neuron of the output layer).
 \node (P) at (0,0) {P};
 \node (S1) at (1,0) {S1};
 \node (S2) at (2,0) {S2};
-%\node (D) at (2.5,1) {D};
-%\node (E) at (2.5,-3) {E};
-%\node (F) at (5,3) {F} ;
 \end{scope}
-\begin{scope}[>={Stealth[black]},
+%\begin{scope}[>={Stealth[black]},
+\begin{scope}[
         every node/.style={fill=white,circle},
     every edge/.style={draw=black,very thick}]
 
@@ -375,7 +380,7 @@ neuron of the output layer).
 %\node (E) at (2.5,-3) {E};
 %\node (F) at (5,3) {F} ;
 \end{scope}
-\begin{scope}[>={Stealth},
+\begin{scope}[%>={Stealth},
         every node/.style={fill=white,circle},
     every edge/.style={draw=black,very thick}]
     
@@ -407,18 +412,19 @@ neuron of the output layer).
 \begin{minipage}[b]{0.35\textwidth}
 \centering
 \begin{itemize}
-\item[]\tikz{\path[very thick,->,draw=black,>={Stealth}] 
+\item[]\tikz{\path[very thick,->,draw=black] %,>={Stealth}] 
         (0,0) -- (1,0) ;}Excitatory fixed-weight connection
-\item[]\tikz{\path[very thick,->,draw=red,>={Stealth}] 
+\item[]\tikz{\path[very thick,->,draw=red] %,>={Stealth}] 
         (0,0) -- (1,0) ;}Inhibitory fixed-weight connection
-\item[]\tikz{\path[very thick,->,dashed,draw=black,>={Stealth}] 
+\item[]\tikz{\path[very thick,->,dashed,draw=black] %,>={Stealth}] 
         (0,0) -- (1,0) ;}Excitatory plastic connection
-\item[]\tikz{\path[very thick,->,dashed,draw=red,>={Stealth}] 
+\item[]\tikz{\path[very thick,->,dashed,draw=red] %,>={Stealth}] 
         (0,0) -- (1,0) ;}Inhibitory plastic connection
 \end{itemize}
 \end{minipage}
-%\end{subfigure}
+%%\end{subfigure}
 %%%% Look at 'example of perrin jablonski diagram' for how to make a legend with itemize...
+
 \caption{Schematic networks found by BOHP to solve the conditioning problem with
 mutually exclusive stimuli (a) or uncorrelated stimuli (b).}
 \label{fig:networks}

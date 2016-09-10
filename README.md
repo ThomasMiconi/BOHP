@@ -1,6 +1,6 @@
 # Backpropagation of Hebbian Plasticity
 
-This is the code for backpropagation of Hebbian plasticity, as described in an upcoming paper.
+This is the code for backpropagation of Hebbian plasticity, as described in the Arxiv preprint [Backpropagation of Hebbian plasticity for lifelong learning](https://arxiv.org/abs/1609.02228).
 
 This code is built upon Andrej Karpathy's [min-char-rnn.py](https://gist.github.com/karpathy/d4dee566867f8291f086). Any bugs and inefficiencies are entirely my own.
 
