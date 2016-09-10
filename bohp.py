@@ -2,14 +2,24 @@
 
 # This is the code for backpropagation of Hebbian plasticity.
 # NOTE: This code is built upon Andrej Karpathy's min-char-rnn.py (https://gist.github.com/karpathy/d4dee566867f8291f086). Any bugs and inefficiencies are entirely my own.
-
 # Requires only numpy.
+
+# This code simulates a simple fear conditioning task: the network must learn
+# to determine which of two stimuli is associated with a "pain" signal, and to
+# produce output 1 whenever that stimulus is present (even in the absence of
+# the pain signal). Which of the two possible stimuli is associated with the
+# pain signal changes unpredictably from one episode to the next, but remains
+# stable within each episode. The algorithm optimizes both the weight and the
+# plasticity of all connections, so that during each episode the network
+# quickly learns the necessary associations. See Arxiv preprint for details.
 
 # Default parameters are the ones used in the paper for the 'uncorrelated' problem. You can run the script as-is, or modify some parameters with command-line arguments.
 # Examples (from IPython):
 # %run bohp.py
 # %run bohp.py LEARNPERIOD 0 YSIZE 3
 # %run bohp.py ETA 0.003 MAXDW 0.01 WPEN 3e-4 UPDATETYPE RMSPROP POSWEIGHTS 0 STIMCORR UNCORRELATED YSIZE 2 LEARNPERIOD 20 ALPHATRACE .95
+
+# The program will store the mean absolute errors of each episode in errs.txt, as well as other data (weights, etc.) in data.pkl. See code.
 
 # The only difference with the paper is that we now use a logistic (strictly-positive) output for the final layer. 
 
@@ -124,15 +134,19 @@ for trial in range(g['NBTRIALS']):
 
         y = np.tanh(np.dot(wxy, x) + np.dot (alpha*hebb, x) + by[:, None])   # Tanh nonlinearity on the y
         #z = np.tanh(np.dot(wyz, y) + bz)   # Tanh nonlinearity on the z
-        z = 1.0 / (1.0 + np.exp(-(np.dot(wyz, y) + bz)))  # Logistic nonlinearity on the z - seems slightly better?
+        z = 1.0 / (1.0 + np.exp(-(np.dot(wyz, y) + bz)))  # Logistic nonlinearity on the z 
         
-        gammas = [(1.0 - g['ALPHATRACE'])*(g['ALPHATRACE']**(n-(xx+1))) for xx in range(n)]  # Pre-compute the gammas for the gradients of the Hebbian traces. Note that n is the number of steps already done.
+
+        # Okay, now we comnpute the quantities necessary for the actual BOHP algorithm.
+
+        # Pre-compute the gammas for the gradients of the Hebbian traces (see paper). Note that n is the number of steps already done.
+        gammas = [(1.0 - g['ALPHATRACE'])*(g['ALPHATRACE']**(n-(xx+1))) for xx in range(n)]  
 
         # Gradients of y(t) wrt alphas (dyda):
         summand=0
         for k in range(xsize):
             summand += alpha[None, :, k].T * x[k] * sum([prevx[k] * prevdy *gm for prevx, prevdy, gm in zip(xs, dydas, gammas)]) # Gradients of the Hebbian traces wrt the alphas
-        dyda = summand + x.T * hebb   
+        dyda = summand + x.T * hebb   # Note that dyda is a matrix, of the same shape as wxy (there is one gradient per alph, and one alpha per connection)
 
         # Gradients of y(t) wrt ws (dydw):
         summand=0
@@ -147,9 +161,8 @@ for trial in range(g['NBTRIALS']):
         dydas.append(dyda)
         dydws.append(dydw)
 
-        # Update the Hebbian traces (remember that 'hebb' is a matrix of same dimensionality as wxy)
+        # Update the Hebbian traces (remember that 'hebb' is a matrix of same dimensionality as wxyi - one hebbian trace per connection)
         hebb += (1.0 - g['ALPHATRACE']) * (np.dot(y, x.T) - hebb)
-        #print x.T, y #, hebb
 
         # End of the episode!
 
@@ -160,6 +173,10 @@ for trial in range(g['NBTRIALS']):
     #    rdydas = np.array(dydas).copy()
     #    rdydws = np.array(dydws).copy()
     
+
+    # Now that the episode is completed, we can run some backpropagation. 
+
+    # First, let us compute the error at each timestep in the topmost layer (z)
     # The target output for each timestep is the value of the x associated with pain:
     tgts = np.array(xs)[:, PAINSTIM, 0]
     zsflat = np.array(zs).flatten()   # Flattens the z's of this episode into a single vector - NOTE: assumes zsize=1
@@ -171,14 +188,16 @@ for trial in range(g['NBTRIALS']):
     archerrs.append(errors)
     # if trial  == 1 :  # For gradient checking, you use 3 trials and you only compute the gradients in the middle one
     
-    # Gradient of the error wrt z at each timestep:
-    dedzs = 2*(zsflat -tgts).copy()
-    dedzsraw = dedzs * zsflat * (1 - zsflat)   # Gradient through logistic nonlinearity
+
+    # Now we compute the gradient of the error wrt z at each timestep:
+    dedzs = 2*(zsflat -tgts).copy()             # Derivative of squared error
+    dedzsraw = dedzs * zsflat * (1 - zsflat)    # Gradient through logistic nonlinearity
     #dedzsraw = dedzs * (1 - zsflat * zsflat)   # Gradient through tanh nonlinearity
     #dedzsraw = dedzs.copy() # Gradient through linear output, for debugging
     #dedzsraw = zsflat - tgts   # Experimental hack attempt at cross-entropy-ish error. Didn't seem to make much difference
     
-    # Gradient of the error wrt the y's at each timestep:
+
+    # We backpropagate this through the yz weights to get the gradient of the error wrt the y's at each timestep:
     dedys =  np.dot(wyz.T, dedzsraw[None, :])
 
     ysflat = np.array(ys)[:,:,0].T
@@ -215,7 +234,7 @@ print differr - calcdifferr_tot
     '''
 
 
-    # Now we use the computed gradients for actual weight modification!
+    # Now we use the computed gradients for actual weight modification, using the quantities computed at each timestep during the episode!
     if not g['TEST']:
         # First, the biases by and bz:
         dbz = np.sum(dedzsraw, axis=0)    
@@ -268,8 +287,8 @@ print differr - calcdifferr_tot
 
     # Every 10th trial, display a message and update the output file
     if trial % 10 == 0:
-        print trial, meanerror
-        print "Errors over last trial:"
+        print "Episode #", trial, " - mean abs. error per timestep (excluding learning period): ", meanerror
+        print "Errors at each timestep (should be 0.0 for early learning period):"
         print errors
         np.savetxt("errs.txt", np.array(errs))
         with open('data.pkl', 'wb') as handle:
