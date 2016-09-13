@@ -5,11 +5,13 @@ This is the commented code for backpropagation of Hebbian plasticity, as describ
 This code simulates a simple fear conditioning task: the network must learn
 to determine which of two stimuli is associated with a "pain" signal, and to
 produce output 1 whenever that stimulus is present (even in the absence of
-the pain signal), and 0 otherwise. Which of the two possible stimuli is associated with the
+the pain signal), and 0 otherwise. The stimulus that is associated with the
 pain signal changes unpredictably from one episode to the next, but remains
-stable within each episode. The BOHP algorithm optimizes both the weight and the
+stable within each episode. 
+
+The BOHP algorithm optimizes both the weight and the
 plasticity of all connections, so that during each episode, the network
- quickly learns the necessary associations. See the preprint for details.
+ quickly learns which of the two stimuli predicts the pain signal. See the preprint for details.
 
 This code is built upon Andrej Karpathy's [min-char-rnn.py](https://gist.github.com/karpathy/d4dee566867f8291f086). Any bugs and inefficiencies are entirely my own.
 
