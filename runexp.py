@@ -66,7 +66,7 @@ for optionz in allopts:
     for v in range(20):
         os.mkdir("v"+str(v))
         os.chdir("v"+str(v))
-        CMD = "bsub -q short -W 8:00 -eo e.txt -g /rnn /opt/python-2.7.10/bin/python ../../boph.py " + optionz + " RNGSEED " + str(v)
+        CMD = "bsub -q short -W 8:00 -eo e.txt -g /rnn /opt/python-2.7.10/bin/python ../../bohp.py " + optionz + " RNGSEED " + str(v)
         #CMD = "bsub -q short -W 4:00 -eo e.txt -oo o.txt -g /rnn /opt/python-2.7.10/bin/python ../../rnn.py " + optionz + " RNGSEED " + str(v)
         #CMD = "bsub -q short -W 6:00 -eo e.txt -oo o.txt -g /rnn /opt/python-2.7.10/bin/python ../../min-char-rnn-param.py " + optionz + " RNGSEED " + str(v) # For fixed-size
         #print CMD

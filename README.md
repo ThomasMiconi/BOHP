@@ -1,6 +1,6 @@
 # Backpropagation of Hebbian Plasticity
 
-This is the commented code for backpropagation of Hebbian plasticity, as described in the Arxiv preprint [Backpropagation of Hebbian plasticity for lifelong learning](https://arxiv.org/abs/1609.02228).
+**Note:** This code is obsolete. Please consult http://github.com/ThomasMiconi/LearningToLearnBOHP instead.
 
 This code simulates a simple fear conditioning task: the network must learn
 to determine which of two stimuli is associated with a "pain" signal, and to

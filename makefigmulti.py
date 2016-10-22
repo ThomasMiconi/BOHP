@@ -83,4 +83,4 @@ data = np.vstack((ord, dneur[ord], p[ord])).T
 plt.show()
 plt.show()
 
-#plt.savefig('fig1.png', bbox_inches='tight')
+plt.savefig('fig1.png', bbox_inches='tight')
